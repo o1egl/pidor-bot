@@ -1,18 +1,18 @@
 FROM golang:1.18-alpine as builder
 
-RUN apk add --no-cache git curl
+ARG GITHUB_REF
+ARG GITHUB_SHA
+
+RUN apk add --no-cache git
 
 WORKDIR /app
-
-COPY scripts/ scripts/
-RUN scripts/task_install.sh -d -b /usr/local/bin
 
 COPY go.mod .
 COPY go.sum .
 RUN go mod download
 
 COPY . .
-RUN task build
+RUN go build -o bin/pidor-bot
 
 FROM alpine:3.16
 
