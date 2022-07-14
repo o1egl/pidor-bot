@@ -11,7 +11,7 @@ type Config struct {
 	Debug           bool   `mapstructure:"debug" yaml:"debug"`
 	Token           string `mapstructure:"token" yaml:"token"`
 	FetchingTimeout int    `mapstructure:"fetching_timeout" yaml:"fetching_timeout"`
-	DB              DB     `mapstructure:"db" yaml:"db"`
+	DBPath          string `mapstructure:"db_path" yaml:"db_path"`
 }
 
 type DB struct {
@@ -19,11 +19,12 @@ type DB struct {
 }
 
 func Load() (*Config, error) {
-	viper.SetDefault("fetching_timeout", 60)
-	viper.SetDefault("db", DB{Path: "./var/pidor.db"})
 	bindEnvs(Config{})
 
-	var cfg Config
+	cfg := Config{
+		FetchingTimeout: 60,
+		DBPath:          "var/pidor.db",
+	}
 	err := viper.Unmarshal(&cfg)
 	if err != nil {
 		return nil, err
@@ -37,7 +38,7 @@ func bindEnvs(iface interface{}, parts ...string) {
 	for i := 0; i < ift.NumField(); i++ {
 		v := ifv.Field(i)
 		t := ift.Field(i)
-		tv, ok := t.Tag.Lookup("yaml")
+		tv, ok := t.Tag.Lookup("mapstructure")
 		if !ok {
 			continue
 		}

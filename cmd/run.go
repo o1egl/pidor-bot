@@ -35,7 +35,7 @@ var runCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		db, err := bbolt.Open(cfg.DB.Path, 0600, nil)
+		db, err := bbolt.Open(cfg.DBPath, 0600, nil)
 		if err != nil {
 			logger.Fatal("Failed to open database", zap.Error(err))
 		}

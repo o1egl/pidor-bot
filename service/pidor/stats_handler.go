@@ -3,9 +3,9 @@ package pidor
 import (
 	"bytes"
 	"context"
+	"html/template"
 	"sort"
 	"strings"
-	"text/template"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -16,10 +16,10 @@ type UserVotes struct {
 }
 
 const statsTpl = `
-Топ *пидоров* за текущий год:
+Топ <b>пидоров</b> за текущий год:
 
 {{ range $index, $user := .Users -}}
-*{{ add $index 1 }}*. {{ $user.Name }} — {{ $user.Votes }} раз(а)
+<b>{{ add $index 1 }}</b>. {{ $user.Name }} — {{ $user.Votes }} раз(а)
 {{ end }}
 `
 

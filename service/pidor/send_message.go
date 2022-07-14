@@ -58,7 +58,7 @@ func (s *Service) sendMessage(chatID int64, text string, vars ...MessageVar) err
 	}
 	msg := tgbotapi.NewMessage(chatID, text)
 	msg.Entities = messageEntities
-	msg.ParseMode = tgbotapi.ModeMarkdown
+	msg.ParseMode = tgbotapi.ModeHTML
 	_, err := s.bot.Send(msg)
 	return err
 }
