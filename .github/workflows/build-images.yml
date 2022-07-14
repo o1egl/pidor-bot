@@ -30,8 +30,8 @@ jobs:
           GITHUB_PACKAGE_TOKEN: ${{ secrets.PKG_TOKEN }}
           DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
           USERNAME: ${{ github.actor }}
-          GITHUB_SHA: ${{ github.sha}}
-          GITHUB_REF: ${{ github.ref}}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF: ${{ github.ref }}
         run: |
           ref="$(echo ${GITHUB_REF} | cut -d'/' -f3)"
           echo "GITHUB_REF=${GITHUB_REF}, GITHUB_SHA=${GITHUB_SHA}, GIT_BRANCH=${ref}"
@@ -39,8 +39,7 @@ jobs:
           echo ${DOCKER_HUB_TOKEN} | docker login -u ${USERNAME} --password-stdin
           docker buildx build --push \
               --platform linux/amd64,linux/arm/v7,linux/arm64 \
-              -t ghcr.io/${USERNAME}/pidor-bot:${ref} -t ghcr.io/${USERNAME}/pidor-bot:master \ 
-              -t ${USERNAME}/pidor-bot:${ref} -t ${USERNAME}/pidor-bot:master .
+              -t ghcr.io/${USERNAME}/pidor-bot:${ref} -t ${USERNAME}/pidor-bot:${ref} .
 
       - name: deploy tagged (latest) to ghcr.io and dockerhub
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
@@ -48,8 +47,8 @@ jobs:
           GITHUB_PACKAGE_TOKEN: ${{ secrets.PKG_TOKEN }}
           DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
           USERNAME: ${{ github.actor }}
-          GITHUB_SHA: ${{ github.sha}}
-          GITHUB_REF: ${{ github.ref}}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF: ${{ github.ref }}
         run: |
           ref="$(echo ${GITHUB_REF} | cut -d'/' -f3)"
           echo "GITHUB_REF=${GITHUB_REF}, GITHUB_SHA=${GITHUB_SHA}, GIT_BRANCH=${ref}"
