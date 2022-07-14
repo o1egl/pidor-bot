@@ -38,7 +38,7 @@ jobs:
           echo ${GITHUB_PACKAGE_TOKEN} | docker login ghcr.io -u ${USERNAME} --password-stdin
           echo ${DOCKER_HUB_TOKEN} | docker login -u ${USERNAME} --password-stdin
           docker buildx build --push \
-              --platform linux/amd64,linux/arm/v7,linux/arm64 \
+              --platform linux/amd64,linux/arm64 \
               -t ghcr.io/${USERNAME}/pidor-bot:${ref} -t ${USERNAME}/pidor-bot:${ref} .
 
       - name: deploy tagged (latest) to ghcr.io and dockerhub
@@ -55,6 +55,6 @@ jobs:
           echo ${GITHUB_PACKAGE_TOKEN} | docker login ghcr.io -u ${USERNAME} --password-stdin
           echo ${DOCKER_HUB_TOKEN} | docker login -u ${USERNAME} --password-stdin
           docker buildx build --push \
-              --platform linux/amd64,linux/arm/v7,linux/arm64 \
+              --platform linux/amd64,linux/arm64 \
               -t ghcr.io/${USERNAME}/pidor-bot:${ref} -t ghcr.io/${USERNAME}/pidor-bot:latest \
               -t ${USERNAME}/pidor-bot:${ref} -t ${USERNAME}/pidor-bot:latest .
