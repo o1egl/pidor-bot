@@ -38,7 +38,6 @@ jobs:
           echo ${GITHUB_PACKAGE_TOKEN} | docker login ghcr.io -u ${USERNAME} --password-stdin
           echo ${DOCKER_HUB_TOKEN} | docker login -u ${USERNAME} --password-stdin
           docker buildx build --push \
-              --build-arg GITHUB_SHA=${GITHUB_SHA} --build-arg GIT_BRANCH=${ref} --build-arg GITHUB_REF=${GITHUB_REF} \
               --platform linux/amd64,linux/arm/v7,linux/arm64 \
               -t ghcr.io/${USERNAME}/pidor-bot:${ref} -t ghcr.io/${USERNAME}/pidor-bot:master \ 
               -t ${USERNAME}/pidor-bot:${ref} -t ${USERNAME}/pidor-bot:master .
@@ -57,7 +56,6 @@ jobs:
           echo ${GITHUB_PACKAGE_TOKEN} | docker login ghcr.io -u ${USERNAME} --password-stdin
           echo ${DOCKER_HUB_TOKEN} | docker login -u ${USERNAME} --password-stdin
           docker buildx build --push \
-              --build-arg GITHUB_SHA=${GITHUB_SHA} --build-arg GIT_BRANCH=${ref} --build-arg GITHUB_REF=${GITHUB_REF} \
               --platform linux/amd64,linux/arm/v7,linux/arm64 \
               -t ghcr.io/${USERNAME}/pidor-bot:${ref} -t ghcr.io/${USERNAME}/pidor-bot:latest \
               -t ${USERNAME}/pidor-bot:${ref} -t ${USERNAME}/pidor-bot:latest .
