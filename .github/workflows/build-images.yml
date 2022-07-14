@@ -40,7 +40,7 @@ jobs:
           docker buildx build --push \
               --build-arg GITHUB_SHA=${GITHUB_SHA} --build-arg GIT_BRANCH=${ref} --build-arg GITHUB_REF=${GITHUB_REF} \
               --platform linux/amd64,linux/arm/v7,linux/arm64 \
-              -t ghcr.io/${USERNAME}/pidor-bot:${ref} -t ghcr.io/${USERNAME}/pidor-bot:master\ 
+              -t ghcr.io/${USERNAME}/pidor-bot:${ref} -t ghcr.io/${USERNAME}/pidor-bot:master \ 
               -t ${USERNAME}/pidor-bot:${ref} -t ${USERNAME}/pidor-bot:master .
 
       - name: deploy tagged (latest) to ghcr.io and dockerhub
