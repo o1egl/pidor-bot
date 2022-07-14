@@ -67,7 +67,7 @@ func (s *Service) Start() error {
 			}
 			logger := s.logger.With(zap.Int("update_id", update.UpdateID))
 			ctx := log.ToContext(ctx, logger)
-			s.processUpdate(ctx, update)
+			go s.processUpdate(ctx, update)
 		}
 	}
 }
