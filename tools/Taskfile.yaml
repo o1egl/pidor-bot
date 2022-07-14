@@ -1,0 +1,42 @@
+version: 3
+
+tasks:
+  all:
+    desc: Install build dependencies
+    cmds:
+      - task: go-enum
+      - task: goimports
+      - task: mockgen
+      - task: go-enum
+
+  go-enum:
+    cmds:
+      - task: install-go-dep
+        vars: { PACKAGE: github.com/abice/go-enum }
+
+  goimports:
+    cmds:
+      - task: install-go-dep
+        vars: { PACKAGE: golang.org/x/tools/cmd/goimports }
+
+  golangci-lint:
+    cmds:
+      - task: install-go-dep
+        vars: { PACKAGE: github.com/golangci/golangci-lint/cmd/golangci-lint }
+
+  mockgen:
+    cmds:
+      - task: install-go-dep
+        vars: { PACKAGE: github.com/golang/mock/mockgen }
+
+  install-go-dep:
+    vars:
+      BIN:
+        sh: basename "{{ .PACKAGE }}"
+    label: "install-{{.BIN}}"
+    cmds:
+      - go build -o bin/{{ .BIN }}  "{{ .PACKAGE }}"
+    sources:
+      - go.mod
+    generates:
+      - bin/{{ .BIN }}
