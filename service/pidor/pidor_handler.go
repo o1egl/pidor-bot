@@ -31,7 +31,7 @@ func (s *Service) handlePidor(ctx context.Context, update tgbotapi.Update) error
 		}
 		return s.sendMessage(
 			update.Message.Chat.ID,
-			"Сегодня пидором дня был выбан {{user}}",
+			"Сегодня пидором дня был выбран {{user}}",
 			NewMentionVar("{{user}}", user.Mention(), user.ID),
 		)
 	}
