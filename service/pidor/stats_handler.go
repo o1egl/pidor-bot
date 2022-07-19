@@ -6,13 +6,15 @@ import (
 	"html/template"
 	"sort"
 	"strings"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type UserVotes struct {
-	Name  string
-	Votes int
+	Name           string
+	Votes          int
+	LatestVoteTime time.Time
 }
 
 const statsTpl = `
@@ -29,30 +31,47 @@ func (s *Service) handleStats(ctx context.Context, update tgbotapi.Update) error
 		return err
 	}
 
+	userVotesMap := make(map[int64]UserVotes)
+	for _, user := range users {
+		userVotesMap[user.ID] = UserVotes{
+			Name: strings.TrimPrefix(user.Mention(), "@"),
+		}
+	}
+
 	votes, err := s.repoClient.GetVotes(ctx, update.Message.Chat.ID)
 	if err != nil {
 		return err
 	}
-	userVotes := make(map[int64]int)
 	for _, vote := range votes {
-		userVotes[vote.UserID]++
+		userVotes, ok := userVotesMap[vote.UserID]
+		if ok {
+			userVotes.Votes++
+			userVotes.LatestVoteTime = vote.Time
+			userVotesMap[vote.UserID] = userVotes
+		}
 	}
 
-	userWithVotes := make([]UserVotes, 0, len(users))
-	for _, user := range users {
-		userWithVotes = append(userWithVotes, UserVotes{
-			Name:  strings.TrimPrefix(user.Mention(), "@"),
-			Votes: userVotes[user.ID],
-		})
+	userVotes := make([]UserVotes, 0, len(userVotesMap))
+	for _, userVote := range userVotesMap {
+		userVotes = append(userVotes, userVote)
 	}
-	sort.Slice(userWithVotes, func(i, j int) bool {
-		return userWithVotes[i].Votes > userWithVotes[j].Votes
+
+	sort.Slice(userVotes, func(i, j int) bool {
+		userI := userVotes[i]
+		userJ := userVotes[j]
+		if userI.Votes == userJ.Votes {
+			if userI.LatestVoteTime.Equal(userJ.LatestVoteTime) {
+				return userI.Name < userJ.Name
+			}
+			return userI.LatestVoteTime.After(userJ.LatestVoteTime)
+		}
+		return userI.Votes > userJ.Votes
 	})
 
 	tpl := template.Must(template.New("").Funcs(template.FuncMap{"add": add}).Parse(statsTpl))
 	buf := &bytes.Buffer{}
 	err = tpl.Execute(buf, map[string]interface{}{
-		"Users": userWithVotes,
+		"Users": userVotes,
 	})
 	if err != nil {
 		return err
