@@ -24,7 +24,7 @@ func (s *Service) handlePidor(ctx context.Context, update tgbotapi.Update) error
 	}
 
 	if hasVotesWithin(votes, time.Hour) {
-		return s.penaltyVote(ctx, update)
+		return s.sendMessage(update.Message.Chat.ID, "Время выбора нового пидора еще не прошло")
 	}
 
 	users, err := s.repoClient.GetUsers(ctx, update.Message.Chat.ID)
@@ -54,48 +54,6 @@ func (s *Service) handlePidor(ctx context.Context, update tgbotapi.Update) error
 		"Поздравляю {{user}}, ты пидор!",
 		NewMentionVar("{{user}}", user.Mention(), user.ID),
 	)
-}
-
-func (s *Service) penaltyVote(ctx context.Context, update tgbotapi.Update) error {
-	chatID := update.Message.Chat.ID
-	user := UserFromAPI(update.Message.From)
-
-	if err := s.sendTyping(chatID); err != nil {
-		return err
-	}
-	time.Sleep(time.Second)
-
-	if err := s.repoClient.UpsertUser(ctx, chatID, user); err != nil {
-		return err
-	}
-
-	if err := s.repoClient.CreateVote(ctx, chatID, domain.Vote{UserID: user.ID, Time: time.Now()}); err != nil {
-		return err
-	}
-
-	if err := s.sendMessage(chatID, "Ах ты пидор!"); err != nil {
-		return err
-	}
-
-	if err := s.sendTyping(chatID); err != nil {
-		return err
-	}
-	time.Sleep(time.Second)
-
-	if err := s.sendMessage(chatID, "Нехуй было меня будить в неположенное время!"); err != nil {
-		return err
-	}
-
-	if err := s.sendTyping(chatID); err != nil {
-		return err
-	}
-	time.Sleep(time.Second)
-
-	if err := s.sendMessage(chatID, "Теперь пидором будет {{user}}!", NewMentionVar("{{user}}", user.Mention(), user.ID)); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func hasVotesWithin(votes []domain.Vote, dur time.Duration) bool {
