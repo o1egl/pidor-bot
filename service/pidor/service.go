@@ -59,17 +59,12 @@ func (s *Service) Start() error {
 	}()
 
 	ctx := context.Background()
-	for {
-		select {
-		case update, ok := <-s.updates:
-			if !ok {
-				return nil
-			}
-			logger := s.logger.With(zap.Int("update_id", update.UpdateID))
-			ctx := log.ToContext(ctx, logger)
-			go s.processUpdate(ctx, update)
-		}
+	for update := range s.updates {
+		logger := s.logger.With(zap.Int("update_id", update.UpdateID))
+		ctx := log.ToContext(ctx, logger)
+		go s.processUpdate(ctx, update)
 	}
+	return nil
 }
 
 func (s *Service) Stop(ctx context.Context) error {
@@ -110,10 +105,6 @@ func (s *Service) processUpdate(ctx context.Context, update tgbotapi.Update) {
 			log.FromContext(ctx).Error("Failed send message", zap.Error(err))
 		}
 	}
-
-	/*if _, err := s.bot.Request(tgbotapi.NewChatAction(update.Message.Chat.ID, tgbotapi.ChatTyping)); err != nil {
-		return
-	}*/
 }
 
 func cryptoRand(max int64) (int64, error) {

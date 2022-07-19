@@ -63,7 +63,14 @@ func (s *Service) sendMessage(chatID int64, text string, vars ...MessageVar) err
 	return err
 }
 
-func renderTpl(tpl string, variable string, value string) (_ string, offset, length int, _ error) {
+func (s *Service) sendTyping(chatID int64) error {
+	if _, err := s.bot.Request(tgbotapi.NewChatAction(chatID, tgbotapi.ChatTyping)); err != nil {
+		return err
+	}
+	return nil
+}
+
+func renderTpl(tpl, variable, value string) (_ string, offset, length int, _ error) {
 	tplRunes := []rune(tpl)
 	varRunes := []rune(variable)
 	offset = runes.Index(tplRunes, varRunes)

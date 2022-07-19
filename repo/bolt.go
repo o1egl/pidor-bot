@@ -81,7 +81,7 @@ func (b *BoltRepo) UpsertUser(ctx context.Context, chatID int64, user domain.Use
 		}
 
 		usersBucket, err := chatBucket.CreateBucketIfNotExists(b.usersBucket())
-		if err != err {
+		if err != nil {
 			return err
 		}
 
@@ -116,7 +116,6 @@ func (b *BoltRepo) GetUsers(ctx context.Context, chatID int64) ([]domain.User, e
 			users = append(users, user)
 			return nil
 		})
-
 	})
 	if err != nil {
 		return nil, err
@@ -157,7 +156,7 @@ func (b *BoltRepo) CreateVote(ctx context.Context, chatID int64, vote domain.Vot
 		}
 
 		votesBucket, err := chatBucket.CreateBucketIfNotExists(b.votesBucket())
-		if err != err {
+		if err != nil {
 			return err
 		}
 

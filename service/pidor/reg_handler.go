@@ -9,13 +9,7 @@ import (
 )
 
 func (s *Service) handleReg(ctx context.Context, update tgbotapi.Update) error {
-	user := domain.User{
-		ID:        update.Message.From.ID,
-		FirstName: update.Message.From.FirstName,
-		LastName:  update.Message.From.LastName,
-		Username:  update.Message.From.UserName,
-		IsActive:  true,
-	}
+	user := UserFromAPI(update.Message.From)
 	err := s.repoClient.UpsertUser(ctx, update.Message.Chat.ID, user)
 	if err != nil {
 		return err
@@ -26,4 +20,14 @@ func (s *Service) handleReg(ctx context.Context, update tgbotapi.Update) error {
 		"Поздравляю {{user}}, ты зарегистрировался в почетные ряды пидоров!",
 		NewMentionVar("{{user}}", user.Mention(), user.ID),
 	)
+}
+
+func UserFromAPI(user *tgbotapi.User) domain.User {
+	return domain.User{
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Username:  user.UserName,
+		IsActive:  true,
+	}
 }
