@@ -63,6 +63,7 @@ func (s *Service) penaltyVote(ctx context.Context, update tgbotapi.Update) error
 	if err := s.sendTyping(chatID); err != nil {
 		return err
 	}
+	time.Sleep(time.Second)
 
 	if err := s.repoClient.UpsertUser(ctx, chatID, user); err != nil {
 		return err
@@ -72,9 +73,25 @@ func (s *Service) penaltyVote(ctx context.Context, update tgbotapi.Update) error
 		return err
 	}
 
+	if err := s.sendMessage(chatID, "Ах ты пидор!"); err != nil {
+		return err
+	}
+
+	if err := s.sendTyping(chatID); err != nil {
+		return err
+	}
 	time.Sleep(time.Second)
 
-	if err := s.sendMessage(chatID, "Ах ты пидор! Нехуй было меня будить в неположенное время! Теперь пидором будет {{user}}!", NewMentionVar("{{user}}", user.Mention(), user.ID)); err != nil {
+	if err := s.sendMessage(chatID, "Нехуй было меня будить в неположенное время!"); err != nil {
+		return err
+	}
+
+	if err := s.sendTyping(chatID); err != nil {
+		return err
+	}
+	time.Sleep(time.Second)
+
+	if err := s.sendMessage(chatID, "Теперь пидором будет {{user}}!", NewMentionVar("{{user}}", user.Mention(), user.ID)); err != nil {
 		return err
 	}
 
