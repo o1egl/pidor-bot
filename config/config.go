@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	Debug           bool   `mapstructure:"debug" yaml:"debug"`
+	AdminUsername   string `mapstructure:"admin_username" yaml:"admin_username"`
 	Token           string `mapstructure:"token" yaml:"token"`
 	FetchingTimeout int    `mapstructure:"fetching_timeout" yaml:"fetching_timeout"`
 	DBPath          string `mapstructure:"db_path" yaml:"db_path"`

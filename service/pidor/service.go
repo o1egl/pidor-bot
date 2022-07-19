@@ -17,12 +17,13 @@ import (
 )
 
 type Service struct {
-	logger     log.Logger
-	bot        TGBotAPI
-	repoClient repo.Repo
-	updates    tgbotapi.UpdatesChannel
-	shutdownCh chan struct{}
-	doneCh     chan struct{}
+	logger        log.Logger
+	bot           TGBotAPI
+	repoClient    repo.Repo
+	updates       tgbotapi.UpdatesChannel
+	adminUsername string
+	shutdownCh    chan struct{}
+	doneCh        chan struct{}
 }
 
 type TGBotAPI interface {
@@ -43,12 +44,13 @@ func New(cfg *config.Config, logger log.Logger, repoClient repo.Repo) (*Service,
 	u.Timeout = cfg.FetchingTimeout
 
 	return &Service{
-		logger:     logger,
-		bot:        bot,
-		repoClient: repoClient,
-		updates:    bot.GetUpdatesChan(u),
-		shutdownCh: make(chan struct{}),
-		doneCh:     make(chan struct{}),
+		logger:        logger,
+		bot:           bot,
+		repoClient:    repoClient,
+		updates:       bot.GetUpdatesChan(u),
+		adminUsername: cfg.AdminUsername,
+		shutdownCh:    make(chan struct{}),
+		doneCh:        make(chan struct{}),
 	}, nil
 }
 
@@ -95,6 +97,8 @@ func (s *Service) processUpdate(ctx context.Context, update tgbotapi.Update) {
 		err = s.handlePidor(ctx, update)
 	case strings.HasPrefix(update.Message.Text, "/stats"):
 		err = s.handleStats(ctx, update)
+	case strings.HasPrefix(update.Message.Text, "/reset"):
+		err = s.handleReset(ctx, update)
 	default:
 		err = s.handleUnknown(ctx, update)
 	}

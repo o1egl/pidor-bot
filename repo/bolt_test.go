@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.etcd.io/bbolt"
 
@@ -139,6 +140,144 @@ func TestBoltRepo_Votes(t *testing.T) {
 			require.Equal(t, wantVotes, gotVotes)
 		})
 	})
+}
+
+func TestBoltRepo_DeleteVotes(t *testing.T) {
+	t.Run("should delete votes for a day", func(t *testing.T) {
+		db := createDB(t)
+		boltRepo := NewBoltRepo(db)
+		votes := []domain.Vote{
+			{
+				UserID: 1,
+				Time:   time.Date(2022, 1, 1, 10, 30, 0, 0, time.UTC),
+			},
+			{
+				UserID: 1,
+				Time:   time.Date(2022, 2, 1, 10, 30, 0, 0, time.UTC),
+			},
+			{
+				UserID: 2,
+				Time:   time.Date(2022, 2, 2, 10, 30, 0, 0, time.UTC),
+			},
+		}
+		createVotes(t, boltRepo, 1, votes)
+
+		err := boltRepo.DeleteVotes(context.Background(), 1, WithYear(2022), WithMonth(2), WithDay(1))
+		assert.NoError(t, err)
+
+		gotVotes, err := boltRepo.GetVotes(context.Background(), 1)
+		assert.NoError(t, err)
+		assert.Equal(t, []domain.Vote{votes[0], votes[2]}, gotVotes)
+	})
+
+	t.Run("should delete votes for a month", func(t *testing.T) {
+		db := createDB(t)
+		boltRepo := NewBoltRepo(db)
+		votes := []domain.Vote{
+			{
+				UserID: 1,
+				Time:   time.Date(2022, 1, 1, 10, 30, 0, 0, time.UTC),
+			},
+			{
+				UserID: 1,
+				Time:   time.Date(2022, 2, 1, 10, 30, 0, 0, time.UTC),
+			},
+			{
+				UserID: 2,
+				Time:   time.Date(2022, 2, 2, 10, 30, 0, 0, time.UTC),
+			},
+		}
+		createVotes(t, boltRepo, 1, votes)
+
+		err := boltRepo.DeleteVotes(context.Background(), 1, WithYear(2022), WithMonth(2))
+		assert.NoError(t, err)
+
+		gotVotes, err := boltRepo.GetVotes(context.Background(), 1)
+		assert.NoError(t, err)
+		assert.Equal(t, []domain.Vote{votes[0]}, gotVotes)
+	})
+
+	t.Run("should delete votes for a year", func(t *testing.T) {
+		db := createDB(t)
+		boltRepo := NewBoltRepo(db)
+		votes := []domain.Vote{
+			{
+				UserID: 1,
+				Time:   time.Date(2022, 1, 1, 10, 30, 0, 0, time.UTC),
+			},
+			{
+				UserID: 1,
+				Time:   time.Date(2022, 2, 1, 10, 30, 0, 0, time.UTC),
+			},
+			{
+				UserID: 2,
+				Time:   time.Date(2022, 2, 2, 10, 30, 0, 0, time.UTC),
+			},
+		}
+		createVotes(t, boltRepo, 1, votes)
+
+		err := boltRepo.DeleteVotes(context.Background(), 1, WithYear(2022))
+		assert.NoError(t, err)
+
+		gotVotes, err := boltRepo.GetVotes(context.Background(), 1)
+		assert.NoError(t, err)
+		assert.Equal(t, []domain.Vote{}, gotVotes)
+	})
+
+	t.Run("should not delete all votes", func(t *testing.T) {
+		db := createDB(t)
+		boltRepo := NewBoltRepo(db)
+		votes := []domain.Vote{
+			{
+				UserID: 1,
+				Time:   time.Date(2020, 1, 1, 10, 30, 0, 0, time.UTC),
+			},
+			{
+				UserID: 1,
+				Time:   time.Date(2022, 2, 1, 10, 30, 0, 0, time.UTC),
+			},
+			{
+				UserID: 2,
+				Time:   time.Date(2022, 2, 2, 10, 30, 0, 0, time.UTC),
+			},
+		}
+		createVotes(t, boltRepo, 1, votes)
+
+		err := boltRepo.DeleteVotes(context.Background(), 1)
+		assert.NoError(t, err)
+
+		gotVotes, err := boltRepo.GetVotes(context.Background(), 1)
+		assert.NoError(t, err)
+		assert.Equal(t, []domain.Vote{}, gotVotes)
+	})
+
+	t.Run("should not delete votes for other chats", func(t *testing.T) {
+		db := createDB(t)
+		boltRepo := NewBoltRepo(db)
+		votes := []domain.Vote{
+			{
+				UserID: 1,
+				Time:   time.Date(2022, 1, 1, 10, 30, 0, 0, time.UTC),
+			},
+		}
+		createVotes(t, boltRepo, 1, votes)
+
+		err := boltRepo.DeleteVotes(context.Background(), 2, WithYear(2022))
+		assert.NoError(t, err)
+
+		gotVotes, err := boltRepo.GetVotes(context.Background(), 1)
+		assert.NoError(t, err)
+		assert.Equal(t, votes, gotVotes)
+	})
+}
+
+func createVotes(t *testing.T, boltRepo Repo, chatID int64, votes []domain.Vote) {
+	t.Helper()
+
+	for _, vote := range votes {
+		err := boltRepo.CreateVote(context.Background(), chatID, vote)
+		require.NoError(t, err)
+	}
 }
 
 func createDB(t *testing.T) *bbolt.DB {

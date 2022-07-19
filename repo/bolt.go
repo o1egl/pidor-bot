@@ -63,6 +63,7 @@ type Repo interface {
 
 	CreateVote(ctx context.Context, chatID int64, vote domain.Vote) error
 	GetVotes(ctx context.Context, chatID int64, opts ...StatsFilterOpts) ([]domain.Vote, error)
+	DeleteVotes(ctx context.Context, chatID int64, opts ...StatsFilterOpts) error
 }
 
 type BoltRepo struct {
@@ -225,6 +226,46 @@ func (b *BoltRepo) GetVotes(ctx context.Context, chatID int64, opts ...StatsFilt
 		return nil, err
 	}
 	return votes, nil
+}
+
+func (b *BoltRepo) DeleteVotes(ctx context.Context, chatID int64, opts ...StatsFilterOpts) error {
+	filters := statsFilters{}
+	for _, opt := range opts {
+		opt(&filters)
+	}
+	var statsPrefix []byte
+	if filters.year > 0 {
+		statsPrefix = b.buildKey([]byte(strconv.Itoa(filters.year)))
+	}
+	if filters.month > 0 {
+		statsPrefix = b.buildKey(statsPrefix, []byte(strconv.Itoa(filters.month)))
+	}
+	if filters.day > 0 {
+		statsPrefix = b.buildKey(statsPrefix, []byte(strconv.Itoa(filters.day)))
+	}
+
+	return b.db.Update(func(tx *bbolt.Tx) error {
+		chatBucket := tx.Bucket(b.channelBucket(chatID))
+		if chatBucket == nil {
+			return nil
+		}
+		statsBucket := chatBucket.Bucket(b.votesBucket())
+		if statsBucket == nil {
+			return nil
+		}
+
+		c := statsBucket.Cursor()
+		for k, _ := c.Seek(statsPrefix); k != nil; k, _ = c.Next() {
+			if !bytes.HasPrefix(k, statsPrefix) {
+				break
+			}
+			if err := c.Delete(); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 }
 
 func (b *BoltRepo) channelBucket(chatID int64) []byte {
