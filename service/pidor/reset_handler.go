@@ -24,7 +24,7 @@ func (s *Service) handleReset(ctx context.Context, update tgbotapi.Update) error
 	}
 
 	var resetPeriod string
-	if parts := strings.Fields(update.Message.Text); len(parts) > 2 {
+	if parts := strings.Fields(update.Message.Text); len(parts) > 1 {
 		resetPeriod = parts[1]
 	}
 
