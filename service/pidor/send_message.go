@@ -69,9 +69,9 @@ func (s *Service) sendMessage(chatID int64, text string, vars ...MessageVar) err
 	return err
 }
 
-func (s *Service) sendMessages(chatID int64, messages []Message, typingDuration time.Duration) error {
-	for _, message := range messages {
-		if typingDuration > 0 {
+func (s *Service) sendMessages(chatID int64, messages []Message, typingDuration time.Duration, typingBeforeFirst bool) error {
+	for i, message := range messages {
+		if typingDuration > 0 && (i > 0 || typingBeforeFirst) {
 			if err := s.sendTyping(chatID); err != nil {
 				return err
 			}
