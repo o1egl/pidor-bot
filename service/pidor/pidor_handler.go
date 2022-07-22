@@ -85,7 +85,7 @@ func (s *Service) handlePidor(ctx context.Context, update tgbotapi.Update) error
 		return err
 	}
 
-	return s.sendMessages(update.Message.Chat.ID, messages, time.Second)
+	return s.sendMessages(update.Message.Chat.ID, messages, 500*time.Millisecond)
 }
 
 func getPidorMessages(user domain.User) ([]Message, error) {
