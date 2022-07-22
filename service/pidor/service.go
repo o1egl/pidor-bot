@@ -3,9 +3,7 @@ package pidor
 
 import (
 	"context"
-	"crypto/rand"
 	"fmt"
-	"math/big"
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -109,12 +107,4 @@ func (s *Service) processUpdate(ctx context.Context, update tgbotapi.Update) {
 			log.FromContext(ctx).Error("Failed send message", zap.Error(err))
 		}
 	}
-}
-
-func cryptoRand(max int64) (int64, error) {
-	num, err := rand.Int(rand.Reader, big.NewInt(max))
-	if err != nil {
-		return 0, err
-	}
-	return num.Int64(), nil
 }

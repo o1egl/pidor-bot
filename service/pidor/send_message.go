@@ -3,6 +3,7 @@ package pidor
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
@@ -21,6 +22,11 @@ type MessageVar struct {
 	Value string
 	Type  MessageVarType
 	User  *tgbotapi.User
+}
+
+type Message struct {
+	Text string
+	Vars []MessageVar
 }
 
 func NewMentionVar(varName, value string, userID int64) MessageVar {
@@ -61,6 +67,21 @@ func (s *Service) sendMessage(chatID int64, text string, vars ...MessageVar) err
 	msg.ParseMode = tgbotapi.ModeHTML
 	_, err := s.bot.Send(msg)
 	return err
+}
+
+func (s *Service) sendMessages(chatID int64, messages []Message, typingDuration time.Duration) error {
+	for _, message := range messages {
+		if typingDuration > 0 {
+			if err := s.sendTyping(chatID); err != nil {
+				return err
+			}
+			time.Sleep(typingDuration)
+		}
+		if err := s.sendMessage(chatID, message.Text, message.Vars...); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *Service) sendTyping(chatID int64) error {

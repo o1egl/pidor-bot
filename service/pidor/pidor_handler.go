@@ -10,6 +10,38 @@ import (
 	"github.com/o1egl/pidor-bot/repo"
 )
 
+func pidorPhrases() [][]string {
+	return [][]string{
+		{
+			"БЛЯЯЯЯ! Хуле выдоебались до меня?",
+			"Здорова заебал",
+			"Чё надо блять?",
+			"Поиск пидора запущен",
+			"Опять? Лан, погнали",
+			"Ха! Думаешь кого-то подставить?",
+			"А не ты ли часом сам пидорок? проверим",
+		},
+		{
+			"Лаадно, ща всё сделаю, так-так..",
+			"Опа-опа, а кто это у нас тут?",
+			"Начинаю поиски...",
+			"Не, ну тут и думать даже не надо",
+			"Бля, ну и так же ясно",
+			"А вы чё, сами не знаете что ли кто это?",
+		},
+		{
+			"Ну чё, {{name}}, тебя вычислили, пидорок! Готовь жопу",
+			"Ну конечно же это {{name}}, кто-то удивлён?",
+			"О, да это же {{name}}, известный в чате пидор!",
+			"Бляяя, ну как так-то?? Мы думали что ты нормальны пацан, а ты пидор, {{name}}",
+			"Ну что, поздравляю с честно заработанным званием главного пидора чата, {{name}}",
+			"Ну ты и пидор, {{name}}",
+			"Ебать ты пидор, {{name}}",
+			"Попался, {{name}}, пидрила ебаная",
+		},
+	}
+}
+
 func (s *Service) handlePidor(ctx context.Context, update tgbotapi.Update) error {
 	today := time.Now()
 	votes, err := s.repoClient.GetVotes(
@@ -35,12 +67,11 @@ func (s *Service) handlePidor(ctx context.Context, update tgbotapi.Update) error
 		return s.sendMessage(update.Message.Chat.ID, "В этом чате нет пидоров")
 	}
 
-	i, err := cryptoRand(int64(len(users)))
+	user, err := randUser(users)
 	if err != nil {
 		return err
 	}
 
-	user := users[i]
 	err = s.repoClient.CreateVote(ctx, update.Message.Chat.ID, domain.Vote{
 		UserID: user.ID,
 		Time:   time.Now(),
@@ -49,11 +80,42 @@ func (s *Service) handlePidor(ctx context.Context, update tgbotapi.Update) error
 		return err
 	}
 
-	return s.sendMessage(
-		update.Message.Chat.ID,
-		"Поздравляю {{user}}, ты пидор!",
-		NewMentionVar("{{user}}", user.Mention(), user.ID),
-	)
+	messages, err := getPidorMessages(user)
+	if err != nil {
+		return err
+	}
+
+	return s.sendMessages(update.Message.Chat.ID, messages, time.Second)
+}
+
+func getPidorMessages(user domain.User) ([]Message, error) {
+	phrases := pidorPhrases()
+	phrase0, err := randString(phrases[0])
+	if err != nil {
+		return nil, err
+	}
+	phrase1, err := randString(phrases[1])
+	if err != nil {
+		return nil, err
+	}
+	phrase2, err := randString(phrases[2])
+	if err != nil {
+		return nil, err
+	}
+
+	messages := []Message{
+		{
+			Text: phrase0,
+		},
+		{
+			Text: phrase1,
+		},
+		{
+			Text: phrase2,
+			Vars: []MessageVar{NewMentionVar("{{user}}", user.Mention(), user.ID)},
+		},
+	}
+	return messages, nil
 }
 
 func hasVotesWithin(votes []domain.Vote, dur time.Duration) bool {
