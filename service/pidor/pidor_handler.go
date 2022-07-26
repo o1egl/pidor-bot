@@ -13,7 +13,7 @@ import (
 func pidorPhrases() [][]string {
 	return [][]string{
 		{
-			"БЛЯЯЯЯ! Хуле выдоебались до меня?",
+			"БЛЯЯЯЯ! Хуле вы доебались до меня?",
 			"Здорова заебал",
 			"Чё надо блять?",
 			"Поиск пидора запущен",
@@ -55,8 +55,10 @@ func (s *Service) handlePidor(ctx context.Context, update tgbotapi.Update) error
 		return err
 	}
 
-	if hasVotesWithin(votes, time.Hour) {
-		return s.sendMessage(update.Message.Chat.ID, "Время выбора нового пидора еще не прошло")
+	votingUserID := update.Message.From.ID
+
+	if containsVotesFromUser(votes, votingUserID) {
+		return s.sendMessage(update.Message.Chat.ID, "Пошел нахуй, пидорок, ты уже голосовал сегодня")
 	}
 
 	users, err := s.repoClient.GetUsers(ctx, update.Message.Chat.ID)
@@ -73,8 +75,9 @@ func (s *Service) handlePidor(ctx context.Context, update tgbotapi.Update) error
 	}
 
 	err = s.repoClient.CreateVote(ctx, update.Message.Chat.ID, domain.Vote{
-		UserID: user.ID,
-		Time:   time.Now(),
+		UserID:      user.ID,
+		VotedUserID: votingUserID,
+		Time:        time.Now(),
 	})
 	if err != nil {
 		return err
@@ -122,6 +125,15 @@ func hasVotesWithin(votes []domain.Vote, dur time.Duration) bool {
 	latHour := time.Now().Truncate(dur)
 	for _, vote := range votes {
 		if vote.Time.Truncate(dur).Equal(latHour) {
+			return true
+		}
+	}
+	return false
+}
+
+func containsVotesFromUser(votes []domain.Vote, userID int64) bool {
+	for _, vote := range votes {
+		if vote.VotedUserID == userID {
 			return true
 		}
 	}
