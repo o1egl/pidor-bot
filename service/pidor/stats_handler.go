@@ -9,7 +9,30 @@ import (
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+
+	"github.com/o1egl/pidor-bot/repo"
 )
+
+type StatsPeriod string
+
+const (
+	StatsPeriodMonth StatsPeriod = "month"
+	StatsPeriodYear  StatsPeriod = "year"
+	StatsPeriodAll   StatsPeriod = "all"
+)
+
+func (s StatsPeriod) TplValue() string {
+	switch s {
+	case StatsPeriodMonth:
+		return "текущий месяц"
+	case StatsPeriodYear:
+		return "текущий год"
+	case StatsPeriodAll:
+		return "все время"
+	default:
+		return "все время"
+	}
+}
 
 type UserVotes struct {
 	Name           string
@@ -18,14 +41,14 @@ type UserVotes struct {
 }
 
 const statsTpl = `
-Топ <b>пидоров</b> за текущий год:
+Топ <b>пидоров</b> за {{ .Period }}:
 
 {{ range $index, $user := .Users -}}
 <b>{{ add $index 1 }}</b>. {{ $user.Name }} — {{ $user.Votes }} раз(а)
 {{ end }}
 `
 
-func (s *Service) handleStats(ctx context.Context, update tgbotapi.Update) error {
+func (s *Service) handleStats(ctx context.Context, update tgbotapi.Update, period StatsPeriod) error {
 	users, err := s.repoClient.GetUsers(ctx, update.Message.Chat.ID)
 	if err != nil {
 		return err
@@ -38,7 +61,17 @@ func (s *Service) handleStats(ctx context.Context, update tgbotapi.Update) error
 		}
 	}
 
-	votes, err := s.repoClient.GetVotes(ctx, update.Message.Chat.ID)
+	var filterOpts []repo.StatsFilterOpts
+	switch period {
+	case StatsPeriodMonth:
+		filterOpts = append(filterOpts, repo.WithMonth(int(time.Now().Month())))
+	case StatsPeriodYear:
+		filterOpts = append(filterOpts, repo.WithYear(time.Now().Year()))
+	case StatsPeriodAll:
+		// no filter
+	}
+
+	votes, err := s.repoClient.GetVotes(ctx, update.Message.Chat.ID, filterOpts...)
 	if err != nil {
 		return err
 	}
@@ -71,7 +104,8 @@ func (s *Service) handleStats(ctx context.Context, update tgbotapi.Update) error
 	tpl := template.Must(template.New("").Funcs(template.FuncMap{"add": add}).Parse(statsTpl))
 	buf := &bytes.Buffer{}
 	err = tpl.Execute(buf, map[string]interface{}{
-		"Users": userVotes,
+		"Users":  userVotes,
+		"Period": period.TplValue(),
 	})
 	if err != nil {
 		return err
