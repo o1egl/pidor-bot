@@ -93,12 +93,12 @@ func (s *Service) processUpdate(ctx context.Context, update tgbotapi.Update) {
 		err = s.handleReg(ctx, update)
 	case strings.HasPrefix(update.Message.Text, "/pidor"):
 		err = s.handlePidor(ctx, update)
-	case strings.HasPrefix(update.Message.Text, "/stats"):
-		err = s.handleStats(ctx, update, StatsPeriodMonth)
 	case strings.HasPrefix(update.Message.Text, "/stats_year"):
 		err = s.handleStats(ctx, update, StatsPeriodYear)
 	case strings.HasPrefix(update.Message.Text, "/stats_all"):
 		err = s.handleStats(ctx, update, StatsPeriodAll)
+	case strings.HasPrefix(update.Message.Text, "/stats"):
+		err = s.handleStats(ctx, update, StatsPeriodMonth)
 	case strings.HasPrefix(update.Message.Text, "/reset"):
 		err = s.handleReset(ctx, update)
 	default:
