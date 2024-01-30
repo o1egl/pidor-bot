@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine as builder
+FROM golang:1.21-alpine as builder
 
 ARG GITHUB_REF
 ARG GITHUB_SHA
@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 RUN go build -o bin/pidor-bot
 
-FROM alpine:3.16
+FROM alpine:3.19
 
 COPY --from=builder /app/bin/pidor-bot /bin/pidor-bot
 
