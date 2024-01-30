@@ -90,6 +90,10 @@ func (s *Service) handlePidor(ctx context.Context, update tgbotapi.Update) error
 		return err
 	}
 
+	if err := s.sendTyping(update.Message.Chat.ID); err != nil {
+		return err
+	}
+
 	messages, err := s.getPidorMessages(ctx, user)
 	if err != nil {
 		return err
