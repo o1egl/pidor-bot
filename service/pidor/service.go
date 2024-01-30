@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/sashabaranov/go-openai"
 	"go.uber.org/zap"
 
 	"github.com/o1egl/pidor-bot/config"
@@ -17,11 +18,20 @@ import (
 type Service struct {
 	logger        log.Logger
 	bot           TGBotAPI
+	enableOpenAI  bool
+	openAIClient  OpenAIClient
 	repoClient    repo.Repo
 	updates       tgbotapi.UpdatesChannel
 	adminUsername string
 	shutdownCh    chan struct{}
 	doneCh        chan struct{}
+}
+
+type OpenAIClient interface {
+	CreateChatCompletion(
+		ctx context.Context,
+		request openai.ChatCompletionRequest,
+	) (openai.ChatCompletionResponse, error)
 }
 
 type TGBotAPI interface {
@@ -44,6 +54,8 @@ func New(cfg *config.Config, logger log.Logger, repoClient repo.Repo) (*Service,
 	return &Service{
 		logger:        logger,
 		bot:           bot,
+		enableOpenAI:  cfg.EnableOpenAI,
+		openAIClient:  openai.NewClient(cfg.OpenAIToken),
 		repoClient:    repoClient,
 		updates:       bot.GetUpdatesChan(u),
 		adminUsername: cfg.AdminUsername,

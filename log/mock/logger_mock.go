@@ -8,8 +8,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	log "github.com/o1egl/pidor-bot/log"
 	zapcore "go.uber.org/zap/zapcore"
+
+	log "github.com/o1egl/pidor-bot/log"
 )
 
 // MockLogger is a mock of Logger interface.

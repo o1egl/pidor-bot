@@ -74,7 +74,7 @@ func NewBoltRepo(db *bbolt.DB) *BoltRepo {
 	return &BoltRepo{db: db}
 }
 
-func (b *BoltRepo) UpsertUser(ctx context.Context, chatID int64, user domain.User) error {
+func (b *BoltRepo) UpsertUser(_ context.Context, chatID int64, user domain.User) error {
 	return b.db.Update(func(tx *bbolt.Tx) error {
 		chatBucket, err := tx.CreateBucketIfNotExists(b.channelBucket(chatID))
 		if err != nil {
@@ -96,7 +96,7 @@ func (b *BoltRepo) UpsertUser(ctx context.Context, chatID int64, user domain.Use
 	})
 }
 
-func (b *BoltRepo) GetUsers(ctx context.Context, chatID int64) ([]domain.User, error) {
+func (b *BoltRepo) GetUsers(_ context.Context, chatID int64) ([]domain.User, error) {
 	users := make([]domain.User, 0)
 	err := b.db.View(func(tx *bbolt.Tx) error {
 		chatBucket := tx.Bucket(b.channelBucket(chatID))
@@ -125,7 +125,7 @@ func (b *BoltRepo) GetUsers(ctx context.Context, chatID int64) ([]domain.User, e
 	return users, nil
 }
 
-func (b *BoltRepo) GetUser(ctx context.Context, chatID, userID int64) (domain.User, error) {
+func (b *BoltRepo) GetUser(_ context.Context, chatID, userID int64) (domain.User, error) {
 	var user domain.User
 	err := b.db.View(func(tx *bbolt.Tx) error {
 		chatBucket := tx.Bucket(b.channelBucket(chatID))
@@ -149,7 +149,7 @@ func (b *BoltRepo) GetUser(ctx context.Context, chatID, userID int64) (domain.Us
 	return user, err
 }
 
-func (b *BoltRepo) CreateVote(ctx context.Context, chatID int64, vote domain.Vote) error {
+func (b *BoltRepo) CreateVote(_ context.Context, chatID int64, vote domain.Vote) error {
 	return b.db.Update(func(tx *bbolt.Tx) error {
 		chatBucket, err := tx.CreateBucketIfNotExists(b.channelBucket(chatID))
 		if err != nil {
@@ -181,7 +181,7 @@ func (b *BoltRepo) CreateVote(ctx context.Context, chatID int64, vote domain.Vot
 	})
 }
 
-func (b *BoltRepo) GetVotes(ctx context.Context, chatID int64, opts ...StatsFilterOpts) ([]domain.Vote, error) {
+func (b *BoltRepo) GetVotes(_ context.Context, chatID int64, opts ...StatsFilterOpts) ([]domain.Vote, error) {
 	filters := statsFilters{}
 	for _, opt := range opts {
 		opt(&filters)

@@ -90,7 +90,7 @@ func (s *Service) handlePidor(ctx context.Context, update tgbotapi.Update) error
 		return err
 	}
 
-	messages, err := getPidorMessages(user)
+	messages, err := s.getPidorMessages(ctx, user)
 	if err != nil {
 		return err
 	}
@@ -98,17 +98,8 @@ func (s *Service) handlePidor(ctx context.Context, update tgbotapi.Update) error
 	return s.sendMessages(update.Message.Chat.ID, messages, time.Second, false)
 }
 
-func getPidorMessages(user domain.User) ([]Message, error) {
-	phrases := pidorPhrases()
-	phrase0, err := randString(phrases[0])
-	if err != nil {
-		return nil, err
-	}
-	phrase1, err := randString(phrases[1])
-	if err != nil {
-		return nil, err
-	}
-	phrase2, err := randString(phrases[2])
+func (s *Service) getPidorMessages(ctx context.Context, user domain.User) ([]Message, error) {
+	phrase0, phrase1, phrase2, err := s.generatePhrases(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -126,6 +117,35 @@ func getPidorMessages(user domain.User) ([]Message, error) {
 		},
 	}
 	return messages, nil
+}
+
+func (s *Service) generatePhrases(ctx context.Context) (phrase0, phrase1, phrase2 string, err error) {
+	if !s.enableOpenAI {
+		return fallbackPhrases()
+	}
+
+	phrase0, phrase1, phrase2, err = s.gptPhrases(ctx)
+	if err != nil {
+		return fallbackPhrases()
+	}
+	return phrase0, phrase1, phrase2, nil
+}
+
+func fallbackPhrases() (phrase0, phrase1, phrase2 string, err error) {
+	phrases := pidorPhrases()
+	phrase0, err = randString(phrases[0])
+	if err != nil {
+		return "", "", "", err
+	}
+	phrase1, err = randString(phrases[1])
+	if err != nil {
+		return "", "", "", err
+	}
+	phrase2, err = randString(phrases[2])
+	if err != nil {
+		return "", "", "", err
+	}
+	return phrase0, phrase1, phrase2, nil
 }
 
 func hasVotesWithin(votes []domain.Vote, dur time.Duration) bool {

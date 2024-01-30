@@ -25,6 +25,11 @@ tasks:
     cmds:
       - go generate ./...
 
+  fmt:
+    desc: Run go fmt
+    cmds:
+      - goimports -w -local github.com/o1egl/pidor-bot ./..
+
   lint:
     desc: Run linters
     deps: [deps:golangci-lint]

@@ -271,6 +271,7 @@ func TestBoltRepo_DeleteVotes(t *testing.T) {
 	})
 }
 
+//nolint:unparam
 func createVotes(t *testing.T, boltRepo Repo, chatID int64, votes []domain.Vote) {
 	t.Helper()
 

@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+
 	domain "github.com/o1egl/pidor-bot/domain"
 	repo "github.com/o1egl/pidor-bot/repo"
 )

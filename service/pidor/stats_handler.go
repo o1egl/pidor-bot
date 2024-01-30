@@ -21,6 +21,7 @@ const (
 	StatsPeriodAll   StatsPeriod = "all"
 )
 
+//nolint:goconst
 func (s StatsPeriod) TplValue() string {
 	switch s {
 	case StatsPeriodMonth:

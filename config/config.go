@@ -11,6 +11,8 @@ type Config struct {
 	Debug           bool   `mapstructure:"debug" yaml:"debug"`
 	AdminUsername   string `mapstructure:"admin_username" yaml:"admin_username"`
 	Token           string `mapstructure:"token" yaml:"token"`
+	EnableOpenAI    bool   `mapstructure:"enable_openai" yaml:"enable_openai"`
+	OpenAIToken     string `mapstructure:"openai_token" yaml:"openai_token"`
 	FetchingTimeout int    `mapstructure:"fetching_timeout" yaml:"fetching_timeout"`
 	DBPath          string `mapstructure:"db_path" yaml:"db_path"`
 }
