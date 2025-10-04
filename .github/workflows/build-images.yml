@@ -29,32 +29,34 @@ jobs:
         env:
           GITHUB_PACKAGE_TOKEN: ${{ secrets.PKG_TOKEN }}
           DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
-          USERNAME: ${{ github.actor }}
+          GHCR_USERNAME: ${{ github.repository_owner }}
+          DOCKER_USERNAME: o1egl
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_REF: ${{ github.ref }}
         run: |
           ref="$(echo ${GITHUB_REF} | cut -d'/' -f3)"
           echo "GITHUB_REF=${GITHUB_REF}, GITHUB_SHA=${GITHUB_SHA}, GIT_BRANCH=${ref}"
-          echo ${GITHUB_PACKAGE_TOKEN} | docker login ghcr.io -u ${USERNAME} --password-stdin
-          echo ${DOCKER_HUB_TOKEN} | docker login -u ${USERNAME} --password-stdin
+          echo ${GITHUB_PACKAGE_TOKEN} | docker login ghcr.io -u ${GHCR_USERNAME} --password-stdin
+          echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_USERNAME} --password-stdin
           docker buildx build --push \
               --platform linux/amd64,linux/arm64 \
-              -t ghcr.io/${USERNAME}/pidor-bot:${ref} -t ${USERNAME}/pidor-bot:${ref} .
+              -t ghcr.io/${GHCR_USERNAME}/pidor-bot:${ref} -t ${DOCKER_USERNAME}/pidor-bot:${ref} .
 
       - name: deploy tagged (latest) to ghcr.io and dockerhub
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
         env:
           GITHUB_PACKAGE_TOKEN: ${{ secrets.PKG_TOKEN }}
           DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
-          USERNAME: ${{ github.actor }}
+          GHCR_USERNAME: ${{ github.repository_owner }}
+          DOCKER_USERNAME: o1egl
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_REF: ${{ github.ref }}
         run: |
           ref="$(echo ${GITHUB_REF} | cut -d'/' -f3)"
           echo "GITHUB_REF=${GITHUB_REF}, GITHUB_SHA=${GITHUB_SHA}, GIT_BRANCH=${ref}"
-          echo ${GITHUB_PACKAGE_TOKEN} | docker login ghcr.io -u ${USERNAME} --password-stdin
-          echo ${DOCKER_HUB_TOKEN} | docker login -u ${USERNAME} --password-stdin
+          echo ${GITHUB_PACKAGE_TOKEN} | docker login ghcr.io -u ${GHCR_USERNAME} --password-stdin
+          echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_USERNAME} --password-stdin
           docker buildx build --push \
               --platform linux/amd64,linux/arm64 \
-              -t ghcr.io/${USERNAME}/pidor-bot:${ref} -t ghcr.io/${USERNAME}/pidor-bot:latest \
-              -t ${USERNAME}/pidor-bot:${ref} -t ${USERNAME}/pidor-bot:latest .
+              -t ghcr.io/${GHCR_USERNAME}/pidor-bot:${ref} -t ghcr.io/${GHCR_USERNAME}/pidor-bot:latest \
+              -t ${DOCKER_USERNAME}/pidor-bot:${ref} -t ${DOCKER_USERNAME}/pidor-bot:latest .
