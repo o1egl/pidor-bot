@@ -10,6 +10,9 @@ on:
 jobs:
   build-images:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v5
@@ -27,7 +30,7 @@ jobs:
       - name: build and deploy master image to ghcr.io and dockerhub
         if: ${{ github.ref == 'refs/heads/master' }}
         env:
-          GITHUB_PACKAGE_TOKEN: ${{ secrets.PKG_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
           GHCR_USERNAME: ${{ github.repository_owner }}
           DOCKER_USERNAME: o1egl
@@ -36,7 +39,7 @@ jobs:
         run: |
           ref="$(echo ${GITHUB_REF} | cut -d'/' -f3)"
           echo "GITHUB_REF=${GITHUB_REF}, GITHUB_SHA=${GITHUB_SHA}, GIT_BRANCH=${ref}"
-          echo ${GITHUB_PACKAGE_TOKEN} | docker login ghcr.io -u ${GHCR_USERNAME} --password-stdin
+          echo ${GITHUB_TOKEN} | docker login ghcr.io -u ${GHCR_USERNAME} --password-stdin
           echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_USERNAME} --password-stdin
           docker buildx build --push \
               --platform linux/amd64,linux/arm64 \
@@ -45,7 +48,7 @@ jobs:
       - name: deploy tagged (latest) to ghcr.io and dockerhub
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
         env:
-          GITHUB_PACKAGE_TOKEN: ${{ secrets.PKG_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
           GHCR_USERNAME: ${{ github.repository_owner }}
           DOCKER_USERNAME: o1egl
@@ -54,7 +57,7 @@ jobs:
         run: |
           ref="$(echo ${GITHUB_REF} | cut -d'/' -f3)"
           echo "GITHUB_REF=${GITHUB_REF}, GITHUB_SHA=${GITHUB_SHA}, GIT_BRANCH=${ref}"
-          echo ${GITHUB_PACKAGE_TOKEN} | docker login ghcr.io -u ${GHCR_USERNAME} --password-stdin
+          echo ${GITHUB_TOKEN} | docker login ghcr.io -u ${GHCR_USERNAME} --password-stdin
           echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_USERNAME} --password-stdin
           docker buildx build --push \
               --platform linux/amd64,linux/arm64 \
